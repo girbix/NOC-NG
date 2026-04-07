@@ -1,0 +1,8 @@
+services:
+  noc-app:
+    build: .
+    container_name: noc-ng
+    ports:
+      - "5000:8080"
+    volumes:
+      - ./keys:/root/.aspnet/DataProtection-Keys  
