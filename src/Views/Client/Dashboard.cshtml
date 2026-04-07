@@ -1,0 +1,44 @@
+@model IEnumerable<Incident>
+@{
+    ViewData["Title"] = "Portale Cliente";
+}
+<div class="stats-cards">
+    <div class="stat-card"><span class="stat-label">Aperti</span><span class="stat-value">@Model.Count(i => i.State == "New")</span></div>
+    <div class="stat-card"><span class="stat-label">In Progress</span><span class="stat-value">@Model.Count(i => i.State == "In Progress")</span></div>
+    <div class="stat-card"><span class="stat-label">Risolti</span><span class="stat-value">@Model.Count(i => i.State == "Resolved")</span></div>
+</div>
+
+<table class="ticket-table">
+    <thead><tr><th>Numero</th><th>Descrizione</th><th>Stato</th><th>Priorità</th></tr></thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr onclick="location.href='/Tech/IncidentDetail/@t.Id'">
+                <td>@t.Number</td><td>@t.ShortDescription</td><td>@t.State</td><td>@t.Priority</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button id="newIncidentBtn" class="btn-primary" onclick="openModal()">Nuovo Incident</button>
+
+<div id="incidentModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Crea Incident</h2>
+        <form method="post" action="/Client/CreateIncident">
+            <input type="text" name="ShortDescription" placeholder="Short description" required />
+            <textarea name="Description" placeholder="Description"></textarea>
+            <select name="Urgency"><option>Low</option><option>Medium</option><option>High</option></select>
+            <select name="Impact"><option>Low</option><option>Medium</option><option>High</option></select>
+            <button type="submit">Crea</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal() { document.getElementById('incidentModal').style.display = 'block'; }
+        document.querySelector('.close').onclick = () => document.getElementById('incidentModal').style.display = 'none';
+    </script>
+}
