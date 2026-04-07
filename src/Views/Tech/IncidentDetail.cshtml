@@ -1,0 +1,19 @@
+@model Incident
+@{
+    ViewData["Title"] = $"Incidente {Model.Number}";
+}
+<form method="post" action="/Tech/UpdateIncident">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <div class="form-group"><label>Numero</label><input value="@Model.Number" readonly /></div>
+    <div class="form-group"><label>Stato</label><select name="State" asp-for="State"><option>New</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select></div>
+    <div class="form-group"><label>Urgenza</label><select name="Urgency" asp-for="Urgency"><option>Low</option><option>Medium</option><option>High</option></select></div>
+    <div class="form-group"><label>Impatto</label><select name="Impact" asp-for="Impact"><option>Low</option><option>Medium</option><option>High</option></select></div>
+    <div class="form-group"><label>Priorità</label><input value="@Model.Priority" readonly /></div>
+    <div class="form-group"><label>Team suggerito (AI)</label><input value="@Model.SuggestedTeam" readonly /></div>
+    <div class="form-group"><label>Assegna a team</label><select name="AssignedTeam"><option>Network</option><option>Cloud</option><option>Cyber Security</option></select></div>
+    <div class="form-group"><label>Assegnato a</label><input name="AssignedTo" value="@Model.AssignedTo" /></div>
+    <div class="form-group"><label>Short description</label><input name="ShortDescription" value="@Model.ShortDescription" /></div>
+    <div class="form-group"><label>Description</label><textarea name="Description">@Model.Description</textarea></div>
+    <div class="form-group"><label>Note interne</label><textarea name="InternalNotes">@Model.InternalNotes</textarea></div>
+    <button type="submit" class="btn-primary">Aggiorna</button>
+</form>
