@@ -1,0 +1,21 @@
+# Chiavi di protezione dati
+keys/
+*.xml
+*.key
+
+# File di build .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+
+# File specifici di IDE
+.vs/
+.vscode/
+.idea/
+
+# File di configurazione locali
+appsettings.Development.json
+launchSettings.json

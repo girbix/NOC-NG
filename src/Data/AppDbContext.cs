@@ -7,8 +7,7 @@ public class AppDbContext : DbContext
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor httpContextAccessor)
-        : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
     {
         _httpContextAccessor = httpContextAccessor;
     }

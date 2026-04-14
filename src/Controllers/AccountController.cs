@@ -40,29 +40,21 @@ public class AccountController : Controller
             new Claim(ClaimTypes.Role, user.Role),
             new Claim("FullName", user.FullName)
         };
-        if (user.CompanyId.HasValue)
-            claims.Add(new Claim("CompanyId", user.CompanyId.Value.ToString()));
-        if (!string.IsNullOrEmpty(user.Team))
-            claims.Add(new Claim("Team", user.Team));
-        if (!string.IsNullOrEmpty(user.Level))
-            claims.Add(new Claim("Level", user.Level));
+        if (user.CompanyId.HasValue) claims.Add(new Claim("CompanyId", user.CompanyId.Value.ToString()));
+        if (!string.IsNullOrEmpty(user.Team)) claims.Add(new Claim("Team", user.Team));
+        if (!string.IsNullOrEmpty(user.Level)) claims.Add(new Claim("Level", user.Level));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSuperSecretKeyAtLeast32CharsLong!"));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.Now.AddHours(8),
-            signingCredentials: creds);
-
+        var token = new JwtSecurityToken(claims: claims, expires: DateTime.Now.AddHours(8), signingCredentials: creds);
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
         Response.Cookies.Append("jwt", tokenString);
 
-        AddAuditLog(user.Email, "Login", $"Accesso effettuato");
+        AddAuditLog(user.Email, "Login", "Accesso effettuato");
 
-        if (user.Role == "Client")
-            return RedirectToAction("Dashboard", "Client");
-        else
-            return RedirectToAction("Dashboard", "Tech");
+        if (user.Role == "Client") return RedirectToAction("Dashboard", "Client");
+        if (user.Role == "Admin") return RedirectToAction("Dashboard", "Admin");
+        return RedirectToAction("Dashboard", "Tech");
     }
 
     public IActionResult Logout()
@@ -73,13 +65,7 @@ public class AccountController : Controller
 
     private void AddAuditLog(string username, string action, string details)
     {
-        var log = new AuditLog
-        {
-            Timestamp = DateTime.Now,
-            Username = username,
-            Action = action,
-            Details = details
-        };
+        var log = new AuditLog { Timestamp = DateTime.Now, Username = username, Action = action, Details = details };
         _context.AuditLogs.Add(log);
         _context.SaveChanges();
     }

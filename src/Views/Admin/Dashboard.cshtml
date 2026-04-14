@@ -1,0 +1,23 @@
+@model IEnumerable<Incident>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+<div class="stats-cards">
+    <div class="stat-card"><span class="stat-label">Totale Incidenti</span><span class="stat-value">@ViewBag.TotalIncidents</span></div>
+    <div class="stat-card"><span class="stat-label">Aperti</span><span class="stat-value">@ViewBag.OpenIncidents</span></div>
+    <div class="stat-card"><span class="stat-label">In Progress</span><span class="stat-value">@ViewBag.InProgressIncidents</span></div>
+</div>
+<h3>Tutti i ticket (multi-tenant)</h3>
+<table class="ticket-table">
+    <thead>
+        <tr><th>Azienda</th><th>Numero</th><th>Descrizione</th><th>Stato</th><th>Priorità</th><th>Assegnato a</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr onclick="location.href='/Admin/IncidentDetail/@t.Id'" style="cursor:pointer;">
+                <td>@(t.Company?.Name ?? t.CompanyId.ToString())</td><td>@t.Number</td><td>@t.ShortDescription</td><td>@t.State</td><td>@t.Priority</td><td>@(t.AssignedTo ?? "-")</td>
+            </tr>
+        }
+    </tbody>
+</table>

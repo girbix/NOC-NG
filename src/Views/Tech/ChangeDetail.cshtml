@@ -1,0 +1,57 @@
+@using NOC_NG.Models
+@model ChangeRequest
+@{
+    ViewData[index: "Title"] = $"Change {Model.Number}";
+}
+<form method="post" action="/Tech/UpdateChange">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <div class="tabs">
+        <button type="button" class="tab-button active" data-tab="planning">Pianificazione</button>
+        <button type="button" class="tab-button" data-tab="notes">Note Interne</button>
+        <button type="button" class="tab-button" data-tab="closure">Chiusura</button>
+    </div>
+    <div id="planning" class="tab-content active">
+        <div class="two-column">
+            <div class="left-column">
+                <div class="form-group"><label>Number</label><input value="@Model.Number" readonly class="form-control" /></div>
+                <div class="form-group"><label>Opened</label><input value="@Model.Opened.ToString("dd/MM/yyyy HH:mm")" readonly class="form-control" /></div>
+                <div class="form-group"><label>Requested by</label><input value="@Model.RequestedBy" readonly class="form-control" /></div>
+                <div class="form-group"><label>Service offering</label><input name="ServiceOffering" value="@Model.ServiceOffering" class="form-control" /></div>
+                <div class="form-group"><label>Configuration item</label><input name="Ci" value="@Model.Ci" class="form-control" /></div>
+                <div class="form-group"><label>Short description</label><input name="ShortDescription" value="@Model.ShortDescription" class="form-control" /></div>
+                <div class="form-group"><label>Description</label><textarea name="Description" class="form-control">@Model.Description</textarea></div>
+                <div class="form-group"><label>Risk</label><select name="Risk" class="form-control"><option selected="@(Model.Risk=="Low")">Low</option><option selected="@(Model.Risk=="Medium")">Medium</option><option selected="@(Model.Risk=="High")">High</option></select></div>
+            </div>
+            <div class="right-column">
+                <div class="form-group required"><label>Giustificazione</label><textarea name="Justification" class="form-control">@Model.Justification</textarea></div>
+                <div class="form-group required"><label>Piano di implementazione</label><textarea name="ImplementationPlan" class="form-control">@Model.ImplementationPlan</textarea></div>
+                <div class="form-group required"><label>Analisi di rischio e impatto</label><textarea name="RiskAnalysis" class="form-control">@Model.RiskAnalysis</textarea></div>
+            </div>
+        </div>
+    </div>
+    <div id="notes" class="tab-content">
+        <div class="form-group"><label>Note private (visibili solo ai tecnici)</label><textarea name="WorkNotes" class="form-control">@Model.WorkNotes</textarea></div>
+    </div>
+    <div id="closure" class="tab-content">
+        <div class="form-group"><label>Grado ticket</label><select name="TicketGrade" class="form-control" id="ticketGrade"><option value="1">Grado 1 (Critico)</option><option value="2">Grado 2 (Alto)</option><option value="3">Grado 3 (Medio)</option></select></div>
+        <div class="form-group" id="rcaGroup"><label>Root Cause Analysis (RCA)</label><textarea name="Rca" class="form-control">@Model.Rca</textarea></div>
+    </div>
+    <div class="full-width"><button type="submit" class="btn-primary">Aggiorna Change</button></div>
+</form>
+@section Scripts {
+    <script>
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+        const gradeSelect = document.getElementById('ticketGrade');
+        const rcaGroup = document.getElementById('rcaGroup');
+        function toggleRcaRequired() { if (gradeSelect.value === '1') rcaGroup.classList.add('required'); else rcaGroup.classList.remove('required'); }
+        gradeSelect.addEventListener('change', toggleRcaRequired);
+        toggleRcaRequired();
+    </script>
+}

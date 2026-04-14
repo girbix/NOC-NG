@@ -10,12 +10,10 @@ public class AiTeamSuggestionService : IAiTeamSuggestionService
             ["Cloud"] = new[] { "aws", "azure", "cloud", "s3", "bucket", "kubernetes", "container", "vm", "virtual machine" },
             ["Cyber Security"] = new[] { "virus", "malware", "ransomware", "phishing", "breach", "vulnerability", "attacco", "hacker" }
         };
-
         var text = (shortDescription + " " + description).ToLower();
         foreach (var (team, teamKeywords) in keywords)
         {
-            if (teamKeywords.Any(k => text.Contains(k)))
-                return team;
+            if (teamKeywords.Any(k => text.Contains(k))) return team;
         }
         return "Network";
     }

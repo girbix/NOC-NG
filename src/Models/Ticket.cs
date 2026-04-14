@@ -20,12 +20,9 @@ public abstract class Ticket
 
     public static string CalculatePriority(string urgency, string impact)
     {
-        if (urgency == "High" && impact == "High")
-            return "1 - Critical";
-        if (urgency == "High" || impact == "High")
-            return "2 - High";
-        if (urgency == "Medium" && impact == "Medium")
-            return "2 - High";
+        if (urgency == "High" && impact == "High") return "1 - Critical";
+        if (urgency == "High" || impact == "High") return "2 - High";
+        if (urgency == "Medium" && impact == "Medium") return "2 - High";
         return "3 - Low";
     }
 }

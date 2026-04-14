@@ -1,44 +1,82 @@
 @model IEnumerable<Incident>
 @{
     ViewData["Title"] = "Portale Cliente";
+    var openCount = Model.Count(i => i.State == "New");
+    var inProgressCount = Model.Count(i => i.State == "In Progress");
+    var resolvedCount = Model.Count(i => i.State == "Resolved" || i.State == "Closed");
+    var total = Model.Count();
+    var progressPercent = total > 0 ? (resolvedCount * 100 / total) : 0;
 }
-<div class="stats-cards">
-    <div class="stat-card"><span class="stat-label">Aperti</span><span class="stat-value">@Model.Count(i => i.State == "New")</span></div>
-    <div class="stat-card"><span class="stat-label">In Progress</span><span class="stat-value">@Model.Count(i => i.State == "In Progress")</span></div>
-    <div class="stat-card"><span class="stat-label">Risolti</span><span class="stat-value">@Model.Count(i => i.State == "Resolved")</span></div>
+<div class="monitoring-section">
+    <h2><i class="fas fa-chart-simple"></i> Monitoraggio Ticket</h2>
+    <div class="stats-cards">
+        <div class="stat-card"><span class="stat-label"><i class="fas fa-inbox"></i> Aperti</span><span class="stat-value">@openCount</span></div>
+        <div class="stat-card"><span class="stat-label"><i class="fas fa-spinner"></i> In lavorazione</span><span class="stat-value">@inProgressCount</span></div>
+        <div class="stat-card"><span class="stat-label"><i class="fas fa-check-circle"></i> Risolti</span><span class="stat-value">@resolvedCount</span></div>
+    </div>
+    <div class="progress-container">
+        <label><i class="fas fa-chart-line"></i> Andamento generale</label>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: @progressPercent%;">@progressPercent%</div>
+        </div>
+    </div>
 </div>
-
-<table class="ticket-table">
-    <thead><tr><th>Numero</th><th>Descrizione</th><th>Stato</th><th>Priorità</th></tr></thead>
-    <tbody>
-        @foreach (var t in Model)
-        {
-            <tr onclick="location.href='/Tech/IncidentDetail/@t.Id'">
-                <td>@t.Number</td><td>@t.ShortDescription</td><td>@t.State</td><td>@t.Priority</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<button id="newIncidentBtn" class="btn-primary" onclick="openModal()">Nuovo Incident</button>
-
+<div class="tickets-section">
+    <h3><i class="fas fa-ticket-alt"></i> I tuoi ticket</h3>
+    <table class="ticket-table">
+        <thead>
+            <tr><th>Numero</th><th>Tipo</th><th>Descrizione</th><th>Stato</th><th>Priorità</th><th>Assegnato a</th><th>Aperto il</th></tr>
+        </thead>
+        <tbody>
+            @foreach (Incident t in Model)
+            {
+                <tr onclick="location.href='/Tech/IncidentDetail/@t.Id'" style="cursor:pointer;">
+                    <td>@t.Number</td><td>Incident</td><td>@t.ShortDescription</td><td>@t.State</td><td>@t.Priority</td><td>@(t.AssignedTo ?? "Non assegnato")</td><td>@t.Opened.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<button id="newIncidentBtn" class="btn-primary"><i class="fas fa-plus-circle"></i> Nuovo Incident</button>
 <div id="incidentModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
-        <h2>Crea Incident</h2>
-        <form method="post" action="/Client/CreateIncident">
-            <input type="text" name="ShortDescription" placeholder="Short description" required />
-            <textarea name="Description" placeholder="Description"></textarea>
-            <select name="Urgency"><option>Low</option><option>Medium</option><option>High</option></select>
-            <select name="Impact"><option>Low</option><option>Medium</option><option>High</option></select>
-            <button type="submit">Crea</button>
+        <h2><i class="fas fa-bug"></i> Crea Nuovo Incident</h2>
+        <form id="incidentForm" method="post" action="@Url.Action("CreateIncident", "Client")" class="two-column">
+            @Html.AntiForgeryToken()
+            <div class="left-column">
+                <div class="form-group required"><label><i class="fas fa-user"></i> Requested by</label><input type="text" name="RequestedBy" value="@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value" readonly required></div>
+                <div class="form-group required"><label><i class="fas fa-phone-alt"></i> Caller</label><input type="text" name="Caller" required></div>
+                <div class="form-group"><label><i class="fas fa-map-marker-alt"></i> Location</label><input type="text" name="Location" list="location-list"><datalist id="location-list"></datalist></div>
+                <div class="form-group required"><label><i class="fas fa-cogs"></i> Service</label><input type="text" name="Service" list="service-list" required><datalist id="service-list"></datalist></div>
+                <div class="form-group"><label><i class="fas fa-tasks"></i> Service Offering</label><input type="text" name="ServiceOffering" list="offering-list"><datalist id="offering-list"></datalist></div>
+                <div class="form-group"><label><i class="fas fa-server"></i> Configuration Item</label><input type="text" name="Ci" list="ci-list"><datalist id="ci-list"></datalist></div>
+            </div>
+            <div class="right-column">
+                <div class="form-group required"><label><i class="fas fa-heading"></i> Short description</label><input type="text" name="ShortDescription" required></div>
+                <div class="form-group"><label><i class="fas fa-align-left"></i> Description</label><textarea name="Description" rows="3"></textarea></div>
+                <div class="form-group"><label><i class="fas fa-sticky-note"></i> Internal notes</label><textarea name="InternalNotes" rows="2"></textarea></div>
+                <div class="form-group"><label><i class="fas fa-exclamation-triangle"></i> Urgency</label><select name="Urgency"><option value="Low">Low</option><option value="Medium" selected>Medium</option><option value="High">High</option></select></div>
+                <div class="form-group"><label><i class="fas fa-chart-line"></i> Impact</label><select name="Impact"><option value="Low">Low</option><option value="Medium" selected>Medium</option><option value="High">High</option></select></div>
+                <div class="form-group"><label><i class="fas fa-file-contract"></i> Contract</label><input type="text" name="Contract"></div>
+            </div>
+            <div class="full-width"><button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Crea Incident</button></div>
         </form>
     </div>
 </div>
-
 @section Scripts {
     <script>
-        function openModal() { document.getElementById('incidentModal').style.display = 'block'; }
-        document.querySelector('.close').onclick = () => document.getElementById('incidentModal').style.display = 'none';
+        const locationsByCompany = { 1: ['Torino','Milano'], 2: ['Bra','Novara'], 3: ['Torino Centro'], 4: ['Moncalieri'] };
+        const servicesByCompany = { 1: ['Cloud','Cyber Security','Network'], 2: ['Network','VoIP','Logistics'], 3: ['VPN','Storage','Banking'], 4: ['Monitoring','VDI','Energy'] };
+        const offeringsByCompany = { 1: ['IaaS','Firewall Management','Endpoint Protection','SD-WAN'], 2: ['SD-WAN','IP Telephony','Call Manager','Fleet Tracking'], 3: ['Site-to-Site VPN','Remote Access VPN','SAN Storage','Core Banking'], 4: ['Infrastructure Monitoring','Desktop Virtualization','Application Performance','Smart Grid'] };
+        const cisByCompany = { 1: ['SVR-PROD-01','FW-TOR-01','SW-CORE-02'], 2: ['SW-WH-04','ROUTER-GW-01','FW-LOG-01'], 3: ['VPN-TUNNEL','NAS-BACKUP','SRV-FIN-01'], 4: ['VDI-USER-88','UPS-APC-05','SOLAR-INV-01'] };
+        const companyId = @(User.FindFirst("CompanyId")?.Value ?? "0");
+        if (companyId) {
+            populateDatalist('location-list', locationsByCompany[companyId] || []);
+            populateDatalist('service-list', servicesByCompany[companyId] || []);
+            populateDatalist('offering-list', offeringsByCompany[companyId] || []);
+            populateDatalist('ci-list', cisByCompany[companyId] || []);
+        }
+        function populateDatalist(listId, items) { const list = document.getElementById(listId); if (list) { list.innerHTML = ''; items.forEach(item => { const opt = document.createElement('option'); opt.value = item; list.appendChild(opt); }); } }
     </script>
 }

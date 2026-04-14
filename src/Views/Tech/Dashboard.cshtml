@@ -2,13 +2,21 @@
 @{
     ViewData["Title"] = "Tech Dashboard";
 }
+<div class="stats-cards">
+    <div class="stat-card"><span class="stat-label"><i class="fas fa-envelope-open-text"></i> Open</span><span class="stat-value">@ViewBag.OpenCount</span></div>
+    <div class="stat-card"><span class="stat-label"><i class="fas fa-spinner"></i> In Progress</span><span class="stat-value">@ViewBag.InProgressCount</span></div>
+    <div class="stat-card"><span class="stat-label"><i class="fas fa-stopwatch"></i> Critical SLA</span><span class="stat-value">@ViewBag.CriticalCount</span></div>
+</div>
+<h3><i class="fas fa-list-ul"></i> Ticket attivi (Incident)</h3>
 <table class="ticket-table">
-    <thead><tr><th>Numero</th><th>Descrizione</th><th>Stato</th><th>Team</th></tr></thead>
+    <thead>
+        <tr><th>Tipo</th><th>Numero</th><th>Short description</th><th>Stato</th><th>Priorità</th><th>Team</th><th>Assegnato a</th><th>Aperto il</th></tr>
+    </thead>
     <tbody>
         @foreach (var t in Model)
         {
-            <tr onclick="location.href='/Tech/IncidentDetail/@t.Id'">
-                <td>@t.Number</td><td>@t.ShortDescription</td><td>@t.State</td><td>@t.AssignedTeam</td>
+            <tr onclick="location.href='/Tech/IncidentDetail/@t.Id'" style="cursor:pointer;">
+                <td>Incident</td><td>@t.Number</td><td>@t.ShortDescription</td><td>@t.State</td><td>@t.Priority</td><td>@(t.AssignedTeam ?? "Non assegnato")</td><td>@(t.AssignedTo ?? "-")</td><td>@t.Opened.ToString("dd/MM/yyyy HH:mm")</td>
             </tr>
         }
     </tbody>

@@ -1,19 +1,98 @@
 @model Incident
 @{
     ViewData["Title"] = $"Incidente {Model.Number}";
+    var technicians = ViewBag.Technicians as List<ApplicationUser>;
+    var parentIncidents = ViewBag.ParentIncidents as List<string>;
+    var clientTickets = ViewBag.ClientTickets as List<Incident>;
 }
 <form method="post" action="/Tech/UpdateIncident">
     <input type="hidden" name="Id" value="@Model.Id" />
-    <div class="form-group"><label>Numero</label><input value="@Model.Number" readonly /></div>
-    <div class="form-group"><label>Stato</label><select name="State" asp-for="State"><option>New</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select></div>
-    <div class="form-group"><label>Urgenza</label><select name="Urgency" asp-for="Urgency"><option>Low</option><option>Medium</option><option>High</option></select></div>
-    <div class="form-group"><label>Impatto</label><select name="Impact" asp-for="Impact"><option>Low</option><option>Medium</option><option>High</option></select></div>
-    <div class="form-group"><label>Priorità</label><input value="@Model.Priority" readonly /></div>
-    <div class="form-group"><label>Team suggerito (AI)</label><input value="@Model.SuggestedTeam" readonly /></div>
-    <div class="form-group"><label>Assegna a team</label><select name="AssignedTeam"><option>Network</option><option>Cloud</option><option>Cyber Security</option></select></div>
-    <div class="form-group"><label>Assegnato a</label><input name="AssignedTo" value="@Model.AssignedTo" /></div>
-    <div class="form-group"><label>Short description</label><input name="ShortDescription" value="@Model.ShortDescription" /></div>
-    <div class="form-group"><label>Description</label><textarea name="Description">@Model.Description</textarea></div>
-    <div class="form-group"><label>Note interne</label><textarea name="InternalNotes">@Model.InternalNotes</textarea></div>
-    <button type="submit" class="btn-primary">Aggiorna</button>
+    <div class="two-column">
+        <div class="left-column">
+            <div class="form-group"><label>Numero</label><input value="@Model.Number" readonly class="form-control" /></div>
+            <div class="form-group"><label>Opened</label><input value="@Model.Opened.ToString("dd/MM/yyyy HH:mm")" readonly class="form-control" /></div>
+            <div class="form-group"><label>Requested by</label><input name="RequestedBy" value="@Model.RequestedBy" class="form-control" /></div>
+            <div class="form-group"><label>Caller</label><input name="Caller" value="@Model.Caller" class="form-control" /></div>
+            <div class="form-group"><label>Location</label><input name="Location" value="@Model.Location" class="form-control" /></div>
+            <div class="form-group"><label>Service offering</label><input name="ServiceOffering" value="@Model.ServiceOffering" class="form-control" /></div>
+            <div class="form-group"><label>Configuration item</label><input name="Ci" value="@Model.Ci" class="form-control" /></div>
+            <div class="form-group"><label>Short description</label><input name="ShortDescription" value="@Model.ShortDescription" class="form-control" /></div>
+            <div class="form-group"><label>Description</label><textarea name="Description" class="form-control">@Model.Description</textarea></div>
+            <div class="form-group"><label>Internal notes</label><textarea name="InternalNotes" class="form-control">@Model.InternalNotes</textarea></div>
+        </div>
+        <div class="right-column">
+            <div class="form-group"><label>Channel</label><input name="Channel" value="@(Model.Channel ?? "Self-Service")" class="form-control" /></div>
+            <div class="form-group"><label>State</label>
+                <select name="State" class="form-control">
+                    <option selected="@(Model.State == "New")">New</option>
+                    <option selected="@(Model.State == "In Progress")">In Progress</option>
+                    <option selected="@(Model.State == "Resolved")">Resolved</option>
+                    <option selected="@(Model.State == "Closed")">Closed</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Impact</label>
+                <select name="Impact" class="form-control">
+                    <option selected="@(Model.Impact == "Low")">Low</option>
+                    <option selected="@(Model.Impact == "Medium")">Medium</option>
+                    <option selected="@(Model.Impact == "High")">High</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Urgency</label>
+                <select name="Urgency" class="form-control">
+                    <option selected="@(Model.Urgency == "Low")">Low</option>
+                    <option selected="@(Model.Urgency == "Medium")">Medium</option>
+                    <option selected="@(Model.Urgency == "High")">High</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Priority</label><input value="@Model.Priority" readonly class="form-control" /></div>
+            <div class="form-group"><label>Parent Incident</label>
+                <input name="ParentIncident" value="@Model.ParentIncident" list="parent-list" class="form-control">
+                <datalist id="parent-list">
+                    @if (parentIncidents != null) { foreach (var p in parentIncidents) { <option value="@p"></option> } }
+                </datalist>
+            </div>
+            <div class="form-group"><label>Assignment group</label><input name="AssignmentGroup" value="@Model.AssignmentGroup" class="form-control" /></div>
+            <div class="form-group"><label>Assigned to</label>
+                <select name="AssignedTo" class="form-control">
+                    <option value="">Seleziona tecnico</option>
+                    @if (technicians != null)
+                    {
+                        foreach (var tech in technicians)
+                        {
+                            <option value="@tech.FullName" selected="@(tech.FullName == Model.AssignedTo)">@tech.FullName (@tech.Team - @tech.Level)</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group"><label>Contract</label><input name="Contract" value="@Model.Contract" class="form-control" /></div>
+            <div class="form-group"><label>Team suggerito (AI)</label><input value="@Model.SuggestedTeam" readonly class="form-control suggested-team" /></div>
+            <div class="form-group"><label>Assegna a team</label>
+                <select name="AssignedTeam" class="form-control">
+                    <option value="">Seleziona team</option>
+                    <option selected="@(Model.AssignedTeam == "Network")">Network</option>
+                    <option selected="@(Model.AssignedTeam == "Cloud")">Cloud</option>
+                    <option selected="@(Model.AssignedTeam == "Cyber Security")">Cyber Security</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="full-width">
+        <h4>Ticket precedenti del cliente</h4>
+        <ul>
+            @if (clientTickets != null && clientTickets.Any())
+            {
+                foreach (var ct in clientTickets)
+                {
+                    <li><a href="/Tech/IncidentDetail/@ct.Id">@ct.Number - @ct.ShortDescription (@ct.State)</a></li>
+                }
+            }
+            else
+            {
+                <li>Nessun ticket precedente</li>
+            }
+        </ul>
+    </div>
+    <div class="full-width">
+        <button type="submit" class="btn-primary">Aggiorna Incident</button>
+    </div>
 </form>
